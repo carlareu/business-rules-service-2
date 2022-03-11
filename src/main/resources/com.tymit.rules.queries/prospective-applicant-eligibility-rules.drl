@@ -1,0 +1,17 @@
+package com.tymit.rules.queries;
+
+unit ProspectiveApplicantUnit;
+
+import com.tymit.com.tymit.rules.model.*;
+
+rule HasRequiredFields
+    when
+        $p: /prospectiveApplicant[ dateOfBirth == null || firstName == null || lastName == null || (productType == "tymit-credit") ] // oopath style
+    then
+        modify($p) { setEligibility("T190") };
+end
+
+// eligibility for applicants are now retrieved through a query
+query Eligibility
+   $p: /prospectiveApplicant
+end
