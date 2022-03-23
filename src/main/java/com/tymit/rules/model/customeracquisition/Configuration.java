@@ -1,6 +1,5 @@
 package com.tymit.rules.model.customeracquisition;
 
-import com.tymit.rules.model.ProductType;
 import lombok.*;
 
 @Builder(toBuilder = true)
@@ -15,6 +14,6 @@ public class Configuration {
     private Integer minimumIncome;
     private String notQualifiedValue;
     private String integrator;
-    private ProductType product;
+    private String product;
     private Integer minimumAge;
 }

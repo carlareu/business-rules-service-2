@@ -2,13 +2,36 @@ package com.tymit.rules.queries;
 
 unit ProspectiveApplicantUnit;
 
-import com.tymit.com.tymit.rules.model.*;
+import com.tymit.rules.model.*;
+import com.tymit.rules.utils.RandomValueGenerator;
 
 rule HasRequiredFields
+    activation-group "SetEligibility"
+    salience 10
     when
-        $p: /prospectiveApplicant[ dateOfBirth == null || firstName == null || lastName == null || (productType == "tymit-credit") ] // oopath style
+        $p: /prospectiveApplicant[ dateOfBirth == null || firstName == null || lastName == null || (productType == ProductType.TYMIT_CREDIT.value && grossAnnualIncomeBT == null) || currentAddress == null]
     then
-        modify($p) { setEligibility("T190") };
+        //System.out.println("\n###########\nNot Rated!!!! --> Eligibility T190: " + $p.eligibility);
+        $p.setEligibility(configuration.getNotRatedValue());
+end
+
+rule isEligible
+    activation-group "SetEligibility"
+    salience 5
+    when
+        $p: /prospectiveApplicant[ age >= configuration.getMinimumAge(),
+        currentAddress.getPostcodePrefix() not memberOf currentAddress.EXCLUDED_POSTCODE_ROOTS,
+        (productType == ProductType.BOOSTER_CREDIT.value || grossAnnualIncomeBT >= configuration.getMinimumIncome()),
+        RandomValueGenerator.nextInt(100) < configuration.getThrottlePct()]
+    then
+        $p.setEligibility(configuration.getEligibilityDefault());
+end
+
+rule isNotQualified
+    activation-group "SetEligibility"
+    salience 0 // if you don´t set the salience value is the same than indicate 0
+    then
+        prospectiveApplicant.setEligibility(configuration.getNotQualifiedValue());
 end
 
 // eligibility for applicants are now retrieved through a query
